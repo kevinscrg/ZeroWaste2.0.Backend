@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Confirmă-ți email-ul</title>
+</head>
+<body>
+<h2>Bine ai venit la Denebris!</h2>
+
+<p>Te rugăm să îți confirmi adresa de email apăsând pe butonul de mai jos:</p>
+
+<p>
+    <a th:href="${confirmationLink}"
+       style="display:inline-block;padding:10px 20px;background:linear-gradient(135deg, #dd1173, #350e47);color:white;
+              text-decoration:none;border-radius:4px;">
+        Confirmă
+    </a>
+</p>
+
+<p>Dacă nu ți-ai creat tu contul, poți ignora acest email.</p>
+</body>
+</html>

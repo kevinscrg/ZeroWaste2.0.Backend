@@ -31,6 +31,8 @@ public class User {
 
     private boolean dark_mode;
 
+    private boolean verified;
+
     @ManyToMany
     private List<Preference> preferences =  new ArrayList<>();
 
@@ -100,5 +102,13 @@ public class User {
 
     public void setAllergies(List<Allergy> allergies) {
         this.allergies = allergies;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
     }
 }
