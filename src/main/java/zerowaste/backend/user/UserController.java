@@ -14,6 +14,8 @@ import zerowaste.backend.user.properties.AllergyRepository;
 import zerowaste.backend.user.properties.Preference;
 import zerowaste.backend.user.properties.PreferenceRepository;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @RestController
@@ -85,6 +87,35 @@ public class UserController {
 
         userRepository.save(user);
         return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/me/update-notification-day/{notificationDay}")
+    public ResponseEntity<?> updateNotificationDay(@AuthenticationPrincipal AppUserDetails me, @PathVariable Integer notificationDay) {
+        User user = userRepository.findById(me.getDomainUser().getId()).orElseThrow();
+
+        user.setNotification_day(notificationDay);
+
+        userRepository.save(user);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/me/update-preferred-notification-hour/{PrefNotHour}")
+    public ResponseEntity<?> updateNotificationHour(@AuthenticationPrincipal AppUserDetails me, @PathVariable String PrefNotHour) {
+        User user = userRepository.findById(me.getDomainUser().getId()).orElseThrow();
+
+        try {
+            LocalTime time = LocalTime.parse(PrefNotHour);
+            user.setPreferred_notification_hour(time);
+
+            userRepository.save(user);
+
+            return ResponseEntity.ok("Ora de notificare a fost actualizată cu succes!");
+
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.badRequest().body("Format oră invalid. Folosiți formatul HH:mm");
+        }
     }
 
 

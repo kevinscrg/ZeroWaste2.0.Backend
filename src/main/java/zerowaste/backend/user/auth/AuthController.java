@@ -199,4 +199,16 @@ public class AuthController {
     }
 
 
+    public record deleteAccount(String password){}
+
+    @DeleteMapping("/delete-account")
+    public ResponseEntity<?> deleteAccount(@AuthenticationPrincipal AppUserDetails me, @RequestBody deleteAccount request){
+        authManager.authenticate(new UsernamePasswordAuthenticationToken(
+                me.getDomainUser().getEmail(), request.password()));
+
+        authService.deleteAccount(me.getDomainUser());
+
+        return  ResponseEntity.noContent().build();
+    }
+
 }

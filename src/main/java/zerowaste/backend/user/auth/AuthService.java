@@ -139,8 +139,7 @@ public class AuthService {
         user.setVerified(true);
         userRepository.save(user);
 
-        token.setUsed(true);
-        tokenRepository.save(token);
+        tokenRepository.delete(token);
     }
 
     @Transactional
@@ -186,9 +185,12 @@ public class AuthService {
         user.setPassword(encoder.encode(newPassword));
         userRepository.save(user);
 
-        token.setUsed(true);
-        passwordTokenRepository.save(token);
+        passwordTokenRepository.delete(token);
     }
 
+    @Transactional
+    public void deleteAccount(User user){
+        userRepository.delete(user);
+    }
 
 }
