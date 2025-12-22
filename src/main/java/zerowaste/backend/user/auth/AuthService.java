@@ -84,7 +84,7 @@ public class AuthService {
             tokenRepository.save(token);
         }
 
-        String confirmationLink = frontendUrl + "/successfully-created-account?token=" + tokenValue;
+        String confirmationLink = frontendUrl + "successfully-created-account?token=" + tokenValue;
 
         String html = emailTemplateService.render(
                 "mail/confirm-email",
@@ -108,7 +108,7 @@ public class AuthService {
             token.setExpiresAt(LocalDateTime.now().plusHours(1));
             passwordTokenRepository.save(token);
 
-            String resetLink = frontendUrl + "/set-new-password?token=" + tokenValue;
+            String resetLink = frontendUrl + "set-new-password?token=" + tokenValue;
 
             String html = emailTemplateService.render(
                     "mail/reset-password",

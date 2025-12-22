@@ -23,7 +23,7 @@ import zerowaste.backend.user.dtos.RegisterUserDto;
 import java.time.Duration;
 import java.util.Map;
 
-record AuthResponse(String access, String refresh) {}
+record AuthResponse(String access) {}
 
 @RestController
 @RequestMapping("/auth")
@@ -103,14 +103,14 @@ public class AuthController {
         ResponseCookie rc = ResponseCookie.from("refreshToken", refresh)
                 .httpOnly(true)
                 .secure(false)
-                .path("/auth/refresh")
+                .path("/auth")
                 .sameSite("Lax")
                 .maxAge(Duration.ofDays(14))
                 .build();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, rc.toString())
-                .body(new AuthResponse(access, refresh));
+                .body(new AuthResponse(access));
     }
 
     @PostMapping("/logout")
@@ -118,7 +118,7 @@ public class AuthController {
         ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(false)
-                .path("/auth/refresh")
+                .path("/auth")
                 .maxAge(0)
                 .sameSite("Lax")
                 .build();
@@ -155,13 +155,13 @@ public class AuthController {
         ResponseCookie rc = ResponseCookie.from("refreshToken", newRefresh)
                 .httpOnly(true)
                 .secure(false)
-                .path("/auth/refresh")
+                .path("/auth")
                 .maxAge(Duration.ofDays(14))
                 .build();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, rc.toString())
-                .body(new AuthResponse(newAccess, rc.toString()));
+                .body(new AuthResponse(newAccess));
     }
 
     @PreAuthorize("isAuthenticated()")

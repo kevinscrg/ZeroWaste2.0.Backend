@@ -76,5 +76,17 @@ public class UserController {
         return ResponseEntity.ok(allergies.stream().map(Allergy::getName).toList());
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/me/update-dark-mode")
+    public ResponseEntity<?> updateDarkMode(@AuthenticationPrincipal AppUserDetails me) {
+        User user = userRepository.findById(me.getDomainUser().getId()).orElseThrow();
+
+        user.setDark_mode(!user.isDark_mode());
+
+        userRepository.save(user);
+        return ResponseEntity.ok().build();
+    }
+
+
 
 }
