@@ -63,7 +63,7 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/confirm")
+    @GetMapping("/verify-email")
     public ResponseEntity<?> confirmEmail(@RequestParam("token") String tokenValue) {
         authService.confirmEmail(tokenValue);
         return ResponseEntity.status(200).build();

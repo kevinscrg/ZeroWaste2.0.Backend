@@ -33,7 +33,6 @@ public class SecurityConfig {
                                                    JwtAuthenticationFilter jwtFilter){
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> {})
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
