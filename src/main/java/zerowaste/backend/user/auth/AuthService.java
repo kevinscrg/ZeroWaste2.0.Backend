@@ -9,6 +9,8 @@ import zerowaste.backend.email.EmailTemplateService;
 import zerowaste.backend.email.MailService;
 import zerowaste.backend.exception.classes.ConstraintException;
 import zerowaste.backend.exception.classes.ExpiredTokenException;
+import zerowaste.backend.product.models.UserProductList;
+import zerowaste.backend.product.repos.UserProductListRepository;
 import zerowaste.backend.user.User;
 import zerowaste.backend.user.UserRepository;
 import zerowaste.backend.user.auth.tokens.EmailVerificationToken;
@@ -17,6 +19,7 @@ import zerowaste.backend.user.auth.tokens.PasswordResetToken;
 import zerowaste.backend.user.auth.tokens.PasswordResetTokenRepository;
 import zerowaste.backend.user.dtos.RegisterUserDto;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -28,7 +31,11 @@ public class AuthService {
     @Value("${frontend.url}")
     private String frontendUrl;
 
+    private static final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private final SecureRandom random = new SecureRandom();
+
     private final UserRepository userRepository;
+    private final UserProductListRepository userProductListRepository;
     private final PasswordEncoder encoder ;
     private final EmailVerificationTokenRepository tokenRepository;
     private final PasswordResetTokenRepository passwordTokenRepository;
@@ -38,13 +45,15 @@ public class AuthService {
     @Autowired
     public AuthService(UserRepository userRepository, PasswordEncoder encoder,
                        EmailVerificationTokenRepository tokenRepository, MailService mailService,
-                       EmailTemplateService emailTemplateService, PasswordResetTokenRepository passwordTokenRepository) {
+                       EmailTemplateService emailTemplateService, PasswordResetTokenRepository passwordTokenRepository,
+                       UserProductListRepository  userProductListRepository) {
         this.userRepository = userRepository;
         this.encoder = encoder;
         this.tokenRepository = tokenRepository;
         this.mailService = mailService;
         this.emailTemplateService = emailTemplateService;
         this.passwordTokenRepository = passwordTokenRepository;
+        this.userProductListRepository = userProductListRepository;
     }
 
     @Transactional
@@ -123,6 +132,22 @@ public class AuthService {
         });
     }
 
+    public String generateUniqueShareCode() {
+        StringBuilder sb = new StringBuilder(6);
+
+        while (true) {
+            sb.setLength(0);
+            for (int i = 0; i < 6; i++) {
+                sb.append(chars.charAt(random.nextInt(chars.length())));
+            }
+
+            String shareCode = sb.toString();
+            if (!userProductListRepository.existsByShareCode(shareCode)) {
+                return shareCode;
+            }
+        }
+    }
+
     @Transactional
     public void confirmEmail(String tokenValue){
         EmailVerificationToken token = tokenRepository.findByToken(tokenValue)
@@ -137,6 +162,17 @@ public class AuthService {
 
         User user = token.getUser();
         user.setVerified(true);
+
+        String shCode = generateUniqueShareCode();
+        UserProductList userProductList = new UserProductList();
+        userProductList.setShareCode(shCode);
+        userProductList.getCollaborators().add(user);
+
+        userProductListRepository.save(userProductList);
+
+        user.setUserProductList(userProductList);
+
+
         userRepository.save(user);
 
         tokenRepository.delete(token);
@@ -190,6 +226,14 @@ public class AuthService {
 
     @Transactional
     public void deleteAccount(User user){
+        UserProductList list = user.getUserProductList();
+        if (list != null) {
+            list.getCollaborators().remove(user);
+
+            if (list.getCollaborators().isEmpty()) {
+                userProductListRepository.delete(list);
+            }
+        }
         userRepository.delete(user);
     }
 

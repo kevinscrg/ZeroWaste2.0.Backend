@@ -2,6 +2,7 @@ package zerowaste.backend.user;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import zerowaste.backend.product.models.UserProductList;
 import zerowaste.backend.user.properties.Allergy;
 import zerowaste.backend.user.properties.Preference;
 
@@ -39,6 +40,8 @@ public class User {
     @ManyToMany
     private List<Allergy> allergies = new  ArrayList<>();
 
+    @ManyToOne
+    private UserProductList userProductList;
 
     public long getId() {
         return id;
@@ -110,5 +113,13 @@ public class User {
 
     public void setVerified(boolean verified) {
         this.verified = verified;
+    }
+
+    public UserProductList getUserProductList() {
+        return userProductList;
+    }
+
+    public void setUserProductList(UserProductList userProductList) {
+        this.userProductList = userProductList;
     }
 }

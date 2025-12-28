@@ -6,8 +6,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import zerowaste.backend.product.models.UserProductList;
+import zerowaste.backend.product.repos.UserProductListRepository;
 import zerowaste.backend.security.AppUserDetails;
-import zerowaste.backend.security.AppUserDetailsService;
 import zerowaste.backend.user.dtos.UserDto;
 import zerowaste.backend.user.properties.Allergy;
 import zerowaste.backend.user.properties.AllergyRepository;
@@ -23,13 +24,16 @@ import java.util.List;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final UserProductListRepository  userProductListRepository;
     private final AllergyRepository allergyRepository;
     private final PreferenceRepository preferenceRepository;
 
-    public UserController(UserRepository userRepository,  AllergyRepository allergyRepository, PreferenceRepository preferenceRepository) {
+    public UserController(UserRepository userRepository,  AllergyRepository allergyRepository, PreferenceRepository preferenceRepository,
+                          UserProductListRepository  userProductListRepository) {
         this.userRepository = userRepository;
         this.allergyRepository = allergyRepository;
         this.preferenceRepository = preferenceRepository;
+        this.userProductListRepository = userProductListRepository;
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -38,7 +42,7 @@ public class UserController {
         return ResponseEntity.ok(new UserDto(
                 userRepository
                         .findById(me.getDomainUser().getId())
-                        .orElseThrow(() -> new AccessDeniedException("nu exista cont"))));
+                        .orElseThrow(() -> new AccessDeniedException("account does not exist"))));
     }
 
     public record PreferenceRequest(List<String> preferences) {}
@@ -101,23 +105,55 @@ public class UserController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PutMapping("/me/update-preferred-notification-hour/{PrefNotHour}")
-    public ResponseEntity<?> updateNotificationHour(@AuthenticationPrincipal AppUserDetails me, @PathVariable String PrefNotHour) {
+    @PutMapping("/me/update-preferred-notification-hour/{prefNotHour}")
+    public ResponseEntity<?> updateNotificationHour(@AuthenticationPrincipal AppUserDetails me, @PathVariable String prefNotHour) {
         User user = userRepository.findById(me.getDomainUser().getId()).orElseThrow();
 
         try {
-            LocalTime time = LocalTime.parse(PrefNotHour);
+            LocalTime time = LocalTime.parse(prefNotHour);
             user.setPreferred_notification_hour(time);
 
             userRepository.save(user);
 
-            return ResponseEntity.ok("Ora de notificare a fost actualizată cu succes!");
+            return ResponseEntity.ok("Notification hour updated");
 
         } catch (DateTimeParseException e) {
-            return ResponseEntity.badRequest().body("Format oră invalid. Folosiți formatul HH:mm");
+            return ResponseEntity.badRequest().body("Invalid Hour Format, should be: HH:MM");
         }
     }
 
+    public record changeListRequest(String shareCode){}
 
+    @Transactional
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/me/change-list")
+    public ResponseEntity<?> changeList(@AuthenticationPrincipal AppUserDetails me, @RequestBody changeListRequest request) {
+        User user = userRepository.findById(me.getDomainUser().getId()).orElseThrow();
+
+        UserProductList oldList = user.getUserProductList();
+
+        if (oldList != null && oldList.getShareCode().equals(request.shareCode())) {
+            return ResponseEntity.badRequest().body("You are already member of this list");
+        }
+
+        UserProductList newList = userProductListRepository.findByShareCode(request.shareCode())
+                .orElseThrow(() -> new IllegalArgumentException("Product list with provided share code does not exist."));
+
+
+        if (oldList != null) {
+            oldList.getCollaborators().remove(user);
+
+            if (oldList.getCollaborators().isEmpty()) {
+                userProductListRepository.delete(oldList);
+            }
+        }
+
+        user.setUserProductList(newList);
+        newList.getCollaborators().add(user);
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok().build();
+    }
 
 }
