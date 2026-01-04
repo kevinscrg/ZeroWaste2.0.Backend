@@ -1,7 +1,8 @@
 package zerowaste.backend.product.controller.requests;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+
 import java.time.LocalDate;
 
 public record UpdateProductRequest(
@@ -9,5 +10,5 @@ public record UpdateProductRequest(
         String name,
         LocalDate bestBefore,
         LocalDate opened,
-        @Positive Integer consumptionDays
+        @PositiveOrZero Integer consumptionDays
 ) {}

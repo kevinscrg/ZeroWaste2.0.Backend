@@ -1,5 +1,6 @@
 package zerowaste.backend.product.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,7 +42,7 @@ public class ProductsController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/")
-    public ResponseEntity<Product> add(@RequestBody AddProductRequest req, @AuthenticationPrincipal AppUserDetails me) {
+    public ResponseEntity<Product> add(@RequestBody @Valid AddProductRequest req, @AuthenticationPrincipal AppUserDetails me) {
         System.out.println("saving product "+req);
         Product saved = service.addProduct(req, me);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -49,7 +50,7 @@ public class ProductsController {
 
     @PreAuthorize("isAuthenticated()")
     @PutMapping("/")
-    public ResponseEntity<Product> update(@RequestBody UpdateProductRequest req, @AuthenticationPrincipal AppUserDetails me) {
+    public ResponseEntity<Product> update(@RequestBody @Valid UpdateProductRequest req, @AuthenticationPrincipal AppUserDetails me) {
         Product updated = service.updateProduct(req, me);
         return ResponseEntity.ok(updated);
     }
@@ -57,7 +58,7 @@ public class ProductsController {
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/")
-    public ResponseEntity<Void> delete(@RequestBody DeleteProductRequest req, @AuthenticationPrincipal AppUserDetails me) {
+    public ResponseEntity<Void> delete(@RequestBody @Valid DeleteProductRequest req, @AuthenticationPrincipal AppUserDetails me) {
         service.deleteProduct(req.id(), me);
 
         return ResponseEntity.noContent().build(); // 204
