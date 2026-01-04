@@ -16,10 +16,15 @@ public class UserProductList {
     private long id;
 
     @NotNull
-    @Column(unique = true, length = 6)
+    @Column(name = "share_code", unique = true, length = 6)
     private String shareCode;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+            name = "user_product_lists_products",
+            joinColumns = @JoinColumn(name = "user_product_list_id"),
+            inverseJoinColumns = @JoinColumn(name = "products_id")
+    )
     List<Product> products =  new ArrayList<>();
 
     @OneToMany(mappedBy = "userProductList")
@@ -33,11 +38,11 @@ public class UserProductList {
         this.id = id;
     }
 
-    public String getShareCode() {
+    public String getShare_code() {
         return shareCode;
     }
 
-    public void setShareCode(String shareCode) {
+    public void setShare_code(String shareCode) {
         this.shareCode = shareCode;
     }
 
