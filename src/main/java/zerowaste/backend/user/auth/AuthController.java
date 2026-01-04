@@ -203,7 +203,7 @@ public class AuthController {
         authManager.authenticate(new UsernamePasswordAuthenticationToken(
                 me.getDomainUser().getEmail(), request.password()));
 
-        authService.deleteAccount(me.getDomainUser());
+        authService.deleteAccount(me);
 
         return  ResponseEntity.noContent().build();
     }

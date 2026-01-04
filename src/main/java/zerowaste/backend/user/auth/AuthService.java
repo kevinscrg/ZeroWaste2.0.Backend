@@ -11,6 +11,7 @@ import zerowaste.backend.exception.classes.ConstraintException;
 import zerowaste.backend.exception.classes.ExpiredTokenException;
 import zerowaste.backend.product.models.UserProductList;
 import zerowaste.backend.product.repos.UserProductListRepository;
+import zerowaste.backend.security.AppUserDetails;
 import zerowaste.backend.user.User;
 import zerowaste.backend.user.UserRepository;
 import zerowaste.backend.user.auth.tokens.EmailVerificationToken;
@@ -227,7 +228,10 @@ public class AuthService {
     }
 
     @Transactional
-    public void deleteAccount(User user){
+    public void deleteAccount(AppUserDetails me){
+
+        User user = userRepository.findById(me.getDomainUser().getId()).orElseThrow();
+
         UserProductList list = user.getUserProductList();
         if (list != null) {
             list.getCollaborators().remove(user);
