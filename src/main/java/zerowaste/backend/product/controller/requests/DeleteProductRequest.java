@@ -1,4 +1,4 @@
-package zerowaste.backend.controller.requests;
+package zerowaste.backend.product.controller.requests;
 
 import jakarta.validation.constraints.NotNull;
 

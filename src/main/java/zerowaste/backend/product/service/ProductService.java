@@ -1,19 +1,21 @@
 // src/main/java/com/example/products/ProductService.java
-package zerowaste.backend.service;
+package zerowaste.backend.product.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import zerowaste.backend.controller.requests.AddProductRequest;
-import zerowaste.backend.controller.requests.UpdateProductRequest;
+import zerowaste.backend.product.controller.requests.AddProductRequest;
+import zerowaste.backend.product.controller.requests.UpdateProductRequest;
 import zerowaste.backend.product.models.Product;
 import zerowaste.backend.product.models.UserProductList;
 import zerowaste.backend.product.repos.ProductRepository;
 import zerowaste.backend.product.repos.UserProductListRepository;
+import zerowaste.backend.security.AppUserDetails;
 import zerowaste.backend.user.User;
 import zerowaste.backend.user.UserRepository;
 import zerowaste.backend.webSocket.ProductWsNotifier;
+
+import java.util.List;
 
 @Service
 public class ProductService {
@@ -30,9 +32,9 @@ public class ProductService {
     }
 
     @Transactional
-    public Product addProduct(AddProductRequest req) {
+    public Product addProduct(AddProductRequest req, AppUserDetails me) {
 
-        UserProductList list = getMyProductList();
+        UserProductList list = getMyProductList(me);
 
         if (list == null) {
             throw new EntityNotFoundException("User has no product list");
@@ -59,12 +61,8 @@ public class ProductService {
     }
 
     @Transactional
-    public Product updateProduct(UpdateProductRequest req) {
-        // 1) Identify current user (based on Authentication name)
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + email));
+    public Product updateProduct(UpdateProductRequest req, AppUserDetails me) {
+        User user = userRepository.findById(me.getDomainUser().getId()).orElseThrow();
 
         UserProductList list = user.getUserProductList();
 
@@ -73,9 +71,9 @@ public class ProductService {
 
 
         if (req.name() != null) p.setName(req.name());
-        p.setBestBefore(req.bestBefore());
-        p.setOpened(req.opened());
-        p.setConsumptionDays(req.consumptionDays());
+        if (req.bestBefore() != null) p.setBestBefore(req.bestBefore());
+        if (req.opened() != null) p.setOpened(req.opened());
+        p.setConsumptionDays(req.consumptionDays() == null ? 0 : req.consumptionDays());
 
         Product updated = productRepository.save(p);
 
@@ -85,8 +83,8 @@ public class ProductService {
     }
 
     @Transactional
-    public void deleteProduct(Long id) {
-        UserProductList list = getMyProductList();
+    public void deleteProduct(Long id, AppUserDetails me) {
+        UserProductList list = getMyProductList(me);
         Product p = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found: " + id));
 
@@ -101,11 +99,8 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public UserProductList getMyProductList() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + email));
+    public UserProductList getMyProductList(AppUserDetails me) {
+        User user = userRepository.findById(me.getDomainUser().getId()).orElseThrow();
 
         UserProductList list = user.getUserProductList();
         if (list == null) {
@@ -117,5 +112,11 @@ public class ProductService {
         list.getCollaborators().size();
 
         return list;
+    }
+
+    public List<String> getCollaborators(AppUserDetails me){
+        User user = userRepository.findById(me.getDomainUser().getId()).orElseThrow();
+        return user.getUserProductList().getCollaborators().stream().map(User::getEmail).filter(e -> !e.equals(user.getEmail())).toList();
+
     }
 }

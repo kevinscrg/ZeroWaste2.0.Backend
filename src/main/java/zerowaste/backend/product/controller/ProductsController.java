@@ -1,17 +1,18 @@
-package zerowaste.backend.controller;
+package zerowaste.backend.product.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import zerowaste.backend.controller.requests.AddProductRequest;
-import zerowaste.backend.controller.requests.DeleteProductRequest;
-import zerowaste.backend.controller.requests.UpdateProductRequest;
+import zerowaste.backend.product.controller.requests.AddProductRequest;
+import zerowaste.backend.product.controller.requests.DeleteProductRequest;
+import zerowaste.backend.product.controller.requests.UpdateProductRequest;
 import zerowaste.backend.product.models.Product;
 import zerowaste.backend.product.models.ProductDto;
 import zerowaste.backend.product.models.UserProductList;
 import zerowaste.backend.product.models.UserProductListDto;
-import zerowaste.backend.service.ProductService;
-import zerowaste.backend.webSocket.ProductWsNotifier;
+import zerowaste.backend.product.service.ProductService;
+import zerowaste.backend.security.AppUserDetails;
 
 import java.util.List;
 
@@ -28,33 +29,38 @@ public class ProductsController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<?> getProductList() {
+    public ResponseEntity<?> getProductList(@AuthenticationPrincipal AppUserDetails me) {
         System.out.println("Fetching productList");
-        UserProductList list = service.getMyProductList();
+        UserProductList list = service.getMyProductList(me);
         UserProductListDto dto = mapToDto(list);
         System.out.println("returning"+dto);
         return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/")
-    public ResponseEntity<Product> add(@RequestBody AddProductRequest req) {
+    public ResponseEntity<Product> add(@RequestBody AddProductRequest req, @AuthenticationPrincipal AppUserDetails me) {
         System.out.println("saving product "+req);
-        Product saved = service.addProduct(req);
+        Product saved = service.addProduct(req, me);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/")
-    public ResponseEntity<Product> update(@RequestBody UpdateProductRequest req) {
-        Product updated = service.updateProduct(req);
+    public ResponseEntity<Product> update(@RequestBody UpdateProductRequest req, @AuthenticationPrincipal AppUserDetails me) {
+        Product updated = service.updateProduct(req, me);
         return ResponseEntity.ok(updated);
     }
 
 
     @DeleteMapping("/")
-    public ResponseEntity<Void> delete(@RequestBody DeleteProductRequest req) {
-        service.deleteProduct(req.id());
+    public ResponseEntity<Void> delete(@RequestBody DeleteProductRequest req, @AuthenticationPrincipal AppUserDetails me) {
+        service.deleteProduct(req.id(), me);
 
         return ResponseEntity.noContent().build(); // 204
+    }
+
+    @GetMapping("/collaborators")
+    public ResponseEntity<?> getCollaborators(@AuthenticationPrincipal AppUserDetails me) {
+        return ResponseEntity.ok(service.getCollaborators(me));
     }
 
     private UserProductListDto mapToDto(UserProductList list) {

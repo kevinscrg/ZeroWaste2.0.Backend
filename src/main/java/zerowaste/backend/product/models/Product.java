@@ -2,7 +2,7 @@ package zerowaste.backend.product.models;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDate;
 
@@ -18,7 +18,7 @@ public class Product {
 
     private LocalDate best_before;
 
-    @Positive
+    @PositiveOrZero
     private Integer consumption_days;
 
     private LocalDate opened;
