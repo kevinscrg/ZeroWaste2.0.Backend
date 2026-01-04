@@ -2,6 +2,7 @@
 package zerowaste.backend.product.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerowaste.backend.product.controller.requests.AddProductRequest;
@@ -13,7 +14,7 @@ import zerowaste.backend.product.repos.UserProductListRepository;
 import zerowaste.backend.security.AppUserDetails;
 import zerowaste.backend.user.User;
 import zerowaste.backend.user.UserRepository;
-import zerowaste.backend.webSocket.ProductWsNotifier;
+import zerowaste.backend.webSocket.ProductListWsEvent;
 
 import java.util.List;
 
@@ -22,13 +23,13 @@ public class ProductService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final UserProductListRepository userProductListRepository;
-    private final ProductWsNotifier notifier;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public ProductService(UserRepository userRepository, ProductRepository productRepository, UserProductListRepository userProductListRepository, ProductWsNotifier notifier) {
+    public ProductService(UserRepository userRepository, ProductRepository productRepository, UserProductListRepository userProductListRepository, ApplicationEventPublisher applicationEventPublisher ) {
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.userProductListRepository = userProductListRepository;
-        this.notifier= notifier;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Transactional
@@ -55,7 +56,7 @@ public class ProductService {
 
         userProductListRepository.save(list);
 
-        notifier.notifyList(list.getShare_code(), "add_product", saved);
+        applicationEventPublisher.publishEvent(new ProductListWsEvent( list.getShare_code(), "add_product", saved));
 
         return saved;
     }
@@ -77,7 +78,7 @@ public class ProductService {
 
         Product updated = productRepository.save(p);
 
-        notifier.notifyList(list.getShare_code(), "update_product", updated);
+        applicationEventPublisher.publishEvent(new ProductListWsEvent( list.getShare_code(), "update_product", updated));
 
         return updated;
     }
@@ -94,7 +95,7 @@ public class ProductService {
         //sterge produsul complet din tabela products
         productRepository.delete(p);
 
-        notifier.notifyList(list.getShare_code(), "delete_product", id);
+        applicationEventPublisher.publishEvent(new ProductListWsEvent( list.getShare_code(), "delete_product", id));
 
     }
 
