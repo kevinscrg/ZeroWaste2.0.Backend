@@ -5,6 +5,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import zerowaste.backend.exception.classes.ConstraintException;
 import zerowaste.backend.product.controller.requests.AddProductRequest;
 import zerowaste.backend.product.controller.requests.UpdateProductRequest;
 import zerowaste.backend.product.models.Product;
@@ -16,6 +17,7 @@ import zerowaste.backend.user.User;
 import zerowaste.backend.user.UserRepository;
 import zerowaste.backend.webSocket.ProductListWsEvent;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -39,6 +41,10 @@ public class ProductService {
 
         if (list == null) {
             throw new EntityNotFoundException("User has no product list");
+        }
+
+        if (req.opened() != null && req.opened().isAfter(LocalDate.now())){
+            throw new ConstraintException("Opened date can`t be in the future!");
         }
 
         // 2) Create + save product
@@ -70,10 +76,13 @@ public class ProductService {
         Product p = productRepository.findById(req.id())
                 .orElseThrow(() -> new EntityNotFoundException("Product not found: " + req.id()));
 
+        if (req.opened() != null && req.opened().isAfter(LocalDate.now())){
+            throw new ConstraintException("Opened date can`t be in the future!");
+        }
 
         if (req.name() != null) p.setName(req.name());
         if (req.bestBefore() != null) p.setBestBefore(req.bestBefore());
-        if (req.opened() != null) p.setOpened(req.opened());
+        p.setOpened(req.opened());
         p.setConsumptionDays(req.consumptionDays() == null ? 0 : req.consumptionDays());
 
         Product updated = productRepository.save(p);
