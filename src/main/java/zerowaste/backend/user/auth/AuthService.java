@@ -165,7 +165,7 @@ public class AuthService {
 
         String shCode = generateUniqueShareCode();
         UserProductList userProductList = new UserProductList();
-        userProductList.setShareCode(shCode);
+        userProductList.setShare_code(shCode);
         userProductList.getCollaborators().add(user);
 
         userProductListRepository.save(userProductList);
