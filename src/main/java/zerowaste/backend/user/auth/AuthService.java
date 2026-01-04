@@ -59,11 +59,11 @@ public class AuthService {
     @Transactional
     public void registerNewUser(RegisterUserDto dto) {
         if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new IllegalArgumentException("Email deja folosit");
+            throw new IllegalArgumentException("The email already exists!");
         }
 
         if(dto.getEmail().contains(dto.getPassword())){
-            throw new ConstraintException("Parola nu trebuie să semene cu adresa de email!");
+            throw new ConstraintException("Password should not be included in your email!");
         }
 
 
@@ -102,7 +102,7 @@ public class AuthService {
 
         mailService.sendHtmlEmail(
                 user.getEmail(),
-                "Confirmă contul tău",
+                "Verify account",
                 html
         );
     }
@@ -126,7 +126,7 @@ public class AuthService {
 
             mailService.sendHtmlEmail(
                     user.getEmail(),
-                    "Resetează parola contului tău",
+                    "Reset your password",
                     html
             );
         });
@@ -153,11 +153,11 @@ public class AuthService {
         EmailVerificationToken token = tokenRepository.findByToken(tokenValue)
                 .orElseThrow(() -> new IllegalArgumentException("Token invalid"));
         if(token.isUsed()){
-            throw new IllegalArgumentException("Email deja confirmat");
+            throw new IllegalArgumentException("Account already verified!");
         }
 
         if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new ExpiredTokenException("Token expirat");
+            throw new ExpiredTokenException("Token expired");
         }
 
         User user = token.getUser();
@@ -181,11 +181,13 @@ public class AuthService {
     @Transactional
     public void resendConfirmationEmail(String tokenValue){
         EmailVerificationToken token  = tokenRepository.findByToken(tokenValue)
-                .orElseThrow(() -> new IllegalArgumentException("Token invalid"));
-        if(token.isUsed()){
-            throw new IllegalArgumentException("Email deja confirmat");
-        }
+                .orElseThrow(() -> new IllegalArgumentException("Invalid token!"));
+
         User user = token.getUser();
+
+        if(token.isUsed() || user.isVerified()){
+            throw new IllegalArgumentException("Account already verified!");
+        }
 
         createAndSendVerificationToken(user, token);
     }
@@ -193,7 +195,7 @@ public class AuthService {
     @Transactional
     public void changePassword(User user,String newPassword, String confirmNewPassword){
         if(!newPassword.equals(confirmNewPassword)){
-            throw new  IllegalArgumentException("Parolele nu coincid");
+            throw new  IllegalArgumentException("Passwords do not match!");
         }
 
         user.setPassword(encoder.encode(newPassword));
@@ -206,15 +208,15 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("Token invalid"));
 
         if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new ExpiredTokenException("Token expirat");
+            throw new ExpiredTokenException("Token expired");
         }
 
         if(token.isUsed()){
-            throw new IllegalArgumentException("Email deja confirmat");
+            throw new IllegalArgumentException("You already changed your password using this link!");
         }
 
         if(!newPassword.equals(confirmNewPassword)){
-            throw new IllegalArgumentException("parolele nu coincid");
+            throw new IllegalArgumentException("Passwords do not match!");
         }
 
         User user = token.getUser();

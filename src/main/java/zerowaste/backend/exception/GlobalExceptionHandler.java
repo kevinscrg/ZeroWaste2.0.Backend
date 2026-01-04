@@ -57,12 +57,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DisabledException.class)
     public  ResponseEntity<ErrorHttpResponse> handleDisabled(DisabledException ex, HttpServletRequest req) {
-        return buildResponse(HttpStatus.FORBIDDEN, "Contul nu a fost validat", req.getRequestURI());
+        return buildResponse(HttpStatus.FORBIDDEN, "Your account is disabled. Please verify your email.", req.getRequestURI());
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorHttpResponse> handleBadCredentials(BadCredentialsException ex, HttpServletRequest req) {
-        return buildResponse(HttpStatus.UNAUTHORIZED, "Parolă incorectă", req.getRequestURI());
+        return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid username or password", req.getRequestURI());
     }
 
     @ExceptionHandler(ResponseStatusException.class)
@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorHttpResponse> handleGeneric(Exception ex, HttpServletRequest req) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "A apărut o eroare neașteptată: " + ex.getMessage() , req.getRequestURI());
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error: " + ex.getMessage() , req.getRequestURI());
     }
 
     private ResponseEntity<ErrorHttpResponse> buildResponse(HttpStatus status, String message, String path) {

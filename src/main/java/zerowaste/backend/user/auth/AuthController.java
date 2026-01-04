@@ -79,15 +79,12 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto, HttpServletResponse response) {
 
         if(!userRepository.existsByEmail(loginDto.getEmail())) {
-            throw new IllegalArgumentException("Nu există niciun cont creat cu această adresă de email.");
+            throw new IllegalArgumentException("There's no user with this email address.");
         }
 
         authManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginDto.getEmail(), loginDto.getPassword()
         ));
-
-        User user = userRepository.findByEmail(loginDto.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Nu există niciun cont creat cu această adresă de email."));
 
 
         String access = jwtService.generateAccessToken(
@@ -181,7 +178,7 @@ public class AuthController {
         authService.createResetToken(forgotPasswordRequest.email());
 
         return ResponseEntity.ok().body(Map.of(
-                "message", "Dacă există un cont cu acest email, vei primi un link de resetare a parolei. Acesta este valabil timp de o oră."
+                "message", "Verify your email!"
         ));
     }
 
@@ -194,7 +191,7 @@ public class AuthController {
         );
 
         return ResponseEntity.ok().body(Map.of(
-                "message", "Parola a fost resetată cu succes."
+                "message", "Password Changed successfully!"
         ));
     }
 
