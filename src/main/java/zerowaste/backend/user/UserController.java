@@ -132,7 +132,7 @@ public class UserController {
 
         UserProductList oldList = user.getUserProductList();
 
-        if (oldList != null && oldList.getShareCode().equals(request.shareCode())) {
+        if (oldList != null && oldList.getShare_code().equals(request.shareCode())) {
             return ResponseEntity.badRequest().body("You are already member of this list");
         }
 
