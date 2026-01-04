@@ -19,9 +19,9 @@ public class Product {
     private LocalDate best_before;
 
     @Positive
-    private int consumption_days;
+    private Integer consumption_days;
 
-    private boolean opened;
+    private LocalDate opened;
 
 
     public long getId() {
@@ -40,27 +40,27 @@ public class Product {
         this.name = name;
     }
 
-    public LocalDate getBest_before() {
+    public LocalDate getBestBefore() {
         return best_before;
     }
 
-    public void setBest_before(LocalDate best_before) {
+    public void setBestBefore(LocalDate best_before) {
         this.best_before = best_before;
     }
 
-    public int getConsumption_days() {
+    public int getConsumptionDays() {
         return consumption_days;
     }
 
-    public void setConsumption_days(int consumption_days) {
+    public void setConsumptionDays(int consumption_days) {
         this.consumption_days = consumption_days;
     }
 
-    public boolean isOpened() {
+    public LocalDate getOpened() {
         return opened;
     }
 
-    public void setOpened(boolean opened) {
+    public void setOpened(LocalDate opened) {
         this.opened = opened;
     }
 }
