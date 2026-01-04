@@ -2,6 +2,7 @@ package zerowaste.backend.product.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import zerowaste.backend.product.controller.requests.AddProductRequest;
@@ -28,6 +29,7 @@ public class ProductsController {
 
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/")
     public ResponseEntity<?> getProductList(@AuthenticationPrincipal AppUserDetails me) {
         System.out.println("Fetching productList");
@@ -37,6 +39,7 @@ public class ProductsController {
         return ResponseEntity.ok(dto);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/")
     public ResponseEntity<Product> add(@RequestBody AddProductRequest req, @AuthenticationPrincipal AppUserDetails me) {
         System.out.println("saving product "+req);
@@ -44,6 +47,7 @@ public class ProductsController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/")
     public ResponseEntity<Product> update(@RequestBody UpdateProductRequest req, @AuthenticationPrincipal AppUserDetails me) {
         Product updated = service.updateProduct(req, me);
@@ -51,6 +55,7 @@ public class ProductsController {
     }
 
 
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/")
     public ResponseEntity<Void> delete(@RequestBody DeleteProductRequest req, @AuthenticationPrincipal AppUserDetails me) {
         service.deleteProduct(req.id(), me);
@@ -58,6 +63,7 @@ public class ProductsController {
         return ResponseEntity.noContent().build(); // 204
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/collaborators")
     public ResponseEntity<?> getCollaborators(@AuthenticationPrincipal AppUserDetails me) {
         return ResponseEntity.ok(service.getCollaborators(me));
