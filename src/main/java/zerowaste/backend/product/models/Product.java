@@ -63,4 +63,28 @@ public class Product {
     public void setOpened(LocalDate opened) {
         this.opened = opened;
     }
+
+    public boolean isExpiringSoon(){
+
+        LocalDate expDay = null;
+
+        if(this.getBestBefore() != null) expDay = this.getBestBefore();
+
+        if(this.getOpened() != null && this.getConsumptionDays() != 0){
+            LocalDate openedExp = this.getOpened().plusDays(this.getConsumptionDays());
+
+            expDay = (expDay == null || expDay.isAfter(openedExp))
+                    ? openedExp
+                    : expDay;
+
+
+        }
+
+        if(expDay == null){
+            return false;
+        }
+
+        return expDay.isBefore(LocalDate.now().plusDays(4)) &&
+                expDay.isAfter(LocalDate.now().minusDays(1));
+    }
 }

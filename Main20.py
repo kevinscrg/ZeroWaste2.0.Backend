@@ -181,9 +181,9 @@ def process_requests_worker(conn):
             user_difficulty = payload.get('Difficulty')
             user_time = payload.get('Time')
             user_type = payload.get('Type')
-            user_liked_recipe_ids = payload.get('Liked Recipes', [])
-            user_disliked_recipe_ids = payload.get('Disliked Recipes', [])
-            expiring_products = payload.get('Expiring Products')
+            user_liked_recipe_ids = payload.get('LikedRecipes', [])
+            user_disliked_recipe_ids = payload.get('DislikedRecipes', [])
+            expiring_products = payload.get('ExpiringProducts')
 
             filtered = filter_recipes(user_allergies, user_preferences, user_type, user_difficulty, user_time)
             
