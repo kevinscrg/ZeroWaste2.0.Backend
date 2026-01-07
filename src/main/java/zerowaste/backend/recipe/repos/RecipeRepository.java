@@ -1,5 +1,7 @@
-package zerowaste.backend.recipe;
+package zerowaste.backend.recipe.repos;
 import org.springframework.data.jpa.repository.JpaRepository;
+import zerowaste.backend.recipe.models.Recipe;
+
 import java.util.List;
 
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package zerowaste.backend.recipe;
+package zerowaste.backend.recipe.models;
 
 import jakarta.persistence.*;
 import zerowaste.backend.user.User;

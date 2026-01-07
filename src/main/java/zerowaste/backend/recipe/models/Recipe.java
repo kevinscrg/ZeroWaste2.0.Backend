@@ -1,4 +1,4 @@
-package zerowaste.backend.recipe;
+package zerowaste.backend.recipe.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
