@@ -8,9 +8,12 @@ import json
 import stomp
 import time
 import queue
+import threading
 from concurrent.futures import ThreadPoolExecutor
 
 request_queue = queue.Queue()
+conn_lock = threading.Lock()
+stop_event = threading.Event()
 
 class SpringStompListener(stomp.ConnectionListener):
     def __init__(self, conn):
@@ -28,6 +31,7 @@ class SpringStompListener(stomp.ConnectionListener):
 
     def on_disconnected(self):
         print("Disconnected from STOMP server. Shuting down...")
+        stop_event.set()
         return super().on_disconnected()
 
 def filter_recipes(user_allergies, user_preferences, user_type, user_difficulty, user_time):
@@ -66,7 +70,7 @@ def filter_recipes(user_allergies, user_preferences, user_type, user_difficulty,
     if user_difficulty:
         filtered_recipes = filtered_recipes[filtered_recipes['Difficulty'].isin(user_difficulty)]
 
-    if user_time is not None:
+    if user_time is not None and user_time != 0:
         time_limits = {1: 30, 2: 60, 3: 120, 4: 180}
         if user_time in time_limits:
             max_time = time_limits[user_time]
@@ -128,16 +132,18 @@ def recomendations(retete_df, user_liked_recipe_ids, user_disliked_recipe_ids):
         lambda x: [item.strip().lower() for item in x.split(',')]
     )
 
+    valid_disliked_ids = [rid for rid in user_disliked_recipe_ids if rid in retete_df.index]
+    if valid_disliked_ids:
+        retete_df = retete_df[~retete_df.index.isin(valid_disliked_ids)]
+
+    if retete_df.empty:
+        return retete_df
+
     # Validare ID-uri
     valid_liked_ids = [rid for rid in user_liked_recipe_ids if rid in retete_df.index]
-    valid_disliked_ids = [rid for rid in user_disliked_recipe_ids if rid in retete_df.index]
-
-    if not valid_liked_ids and not valid_disliked_ids:
-        print("Nu există rețete plăcute sau respinse valide pentru utilizator. Returnăm toate rețetele disponibile.")
+    if not valid_liked_ids:
         return retete_df.reset_index(drop=True)
 
-    # Excludem rețetele respinse
-    retete_df = retete_df[~retete_df.index.isin(valid_disliked_ids)]
 
     # Vectorizare
     mlb = MultiLabelBinarizer()
@@ -168,47 +174,59 @@ def recomendations(retete_df, user_liked_recipe_ids, user_disliked_recipe_ids):
 
 
 def process_requests_worker(conn):
-    while True:
+    while not stop_event.is_set():
         try:
-            cerere = request_queue.get()
-            payload = cerere.get('payload', {})
+            cerere = request_queue.get(timeout=1)
+            try:
+                payload = cerere.get('payload', {})
 
-            print(f"Received request with payload: {payload}")
+                print(f"Received request with payload: {payload}")
 
-            email = payload.get('email')
-            user_allergies = payload.get('Allergens', [])
-            user_preferences = payload.get('Preferences', [])
-            user_difficulty = payload.get('Difficulty')
-            user_time = payload.get('Time')
-            user_type = payload.get('Type')
-            user_liked_recipe_ids = payload.get('LikedRecipes', [])
-            user_disliked_recipe_ids = payload.get('DislikedRecipes', [])
-            expiring_products = payload.get('ExpiringProducts')
+                email = payload.get('email')
+                user_allergies = payload.get('Allergens', [])
+                user_preferences = payload.get('Preferences', [])
+                user_difficulty = payload.get('Difficulty')
+                user_time = payload.get('Time')
+                user_type = payload.get('Type')
+                user_liked_recipe_ids = payload.get('LikedRecipes', [])
+                user_disliked_recipe_ids = payload.get('DislikedRecipes', [])
+                expiring_products = payload.get('ExpiringProducts')
 
-            filtered = filter_recipes(user_allergies, user_preferences, user_type, user_difficulty, user_time)
-            
-            if expiring_products:
-                filtered = use_expiring_ingredients(filtered, expiring_products)
-            
-            if user_liked_recipe_ids:
-                filtered = recomendations(filtered, user_liked_recipe_ids, user_disliked_recipe_ids)
+                filtered = filter_recipes(user_allergies, user_preferences, user_type, user_difficulty, user_time)
 
-            recipe_ids = filtered["id"].tolist()
-            
-            response = {
-                "type": "run", 
-                "payload": {"recipe_ids": recipe_ids, "email": email}
-            }
-            
-            conn.send(
-                body=json.dumps(response), 
-                destination="/app/python-response",
-                headers={'content-type': 'application/json'}
-            )
-            
-            request_queue.task_done()
-        except Exception as e:
-            print(f"Worker error: {e}")
+                if user_disliked_recipe_ids:
+                    filtered = filtered[~filtered['id'].isin(user_disliked_recipe_ids)]
+
+                if user_liked_recipe_ids:
+                    filtered = recomendations(filtered, user_liked_recipe_ids, user_disliked_recipe_ids)
+                
+                if expiring_products:
+                    filtered = use_expiring_ingredients(filtered, expiring_products)
+                
+
+                recipe_ids = filtered["id"].tolist()
+                
+                response = {
+                    "type": "run", 
+                    "payload": {"recipe_ids": recipe_ids, "email": email}
+                }
+
+                print(f"Sending response for email {email} with {len(recipe_ids)} recipe IDs.")
+                
+                with conn_lock:
+                    conn.send(
+                        body=json.dumps(response), 
+                        destination="/app/python-response",
+                        headers={'content-type': 'application/json'}
+                    )
+                
+            except Exception as e:
+                print(f"Worker error: {e}")
+            finally:
+                request_queue.task_done()
+        except queue.Empty:
+            continue
+
 
 def main():
     
@@ -225,14 +243,16 @@ def main():
             for _ in range(num_threads):
                 executor.submit(process_requests_worker, conn)
             
-            while True:
+            while not stop_event.is_set():
                 time.sleep(1)
                 
     except KeyboardInterrupt:
         print("Shutting down...")
     finally:
+        stop_event.set()
         if conn.is_connected():
             conn.disconnect()
+        print("Process finished.")
 
 if __name__ == "__main__":
     main()
