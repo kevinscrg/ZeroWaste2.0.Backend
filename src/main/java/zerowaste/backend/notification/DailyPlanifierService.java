@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import zerowaste.backend.email.EmailTemplateService;
 import zerowaste.backend.email.MailService;
 import zerowaste.backend.product.models.Product;
-import zerowaste.backend.product.repos.UserProductListRepository;
 import zerowaste.backend.user.User;
 import zerowaste.backend.user.UserRepository;
 
@@ -26,7 +25,6 @@ public class DailyPlanifierService {
 
     private final ThreadPoolTaskScheduler taskScheduler;
     private final UserRepository userRepository;
-//    private final UserProductListRepository userProductListRepository;
     private final MailService mailService;
     private final EmailTemplateService emailTemplateService;
 
