@@ -10,7 +10,7 @@ import java.io.PrintStream;
 public class LogRedirectionConfig {
 
     private static final Logger hibernateLog = LoggerFactory.getLogger("HibernateManual");
-    private static final Logger soutLog = LoggerFactory.getLogger("SoutManual");
+    private static final Logger soutLog = LoggerFactory.getLogger("SystemOut");
     private static final Logger errLog = LoggerFactory.getLogger("SystemErr");
 
     @PostConstruct
