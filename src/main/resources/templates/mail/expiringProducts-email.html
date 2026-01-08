@@ -50,7 +50,7 @@
             <tbody>
             <tr th:each="product : ${products}">
                 <td th:text="${product.name}">Product Name</td>
-                <td th:text="${#temporals.format(product.bestBefore, 'dd MMM, yyyy')}">08 Jan, 2026</td>
+                <td th:text="${#temporals.format(product.bestBefore, 'dd MMM, yy', #locale.forLanguageTag('en'))}">08 Jan, 26</td>
             </tr>
             </tbody>
         </table>

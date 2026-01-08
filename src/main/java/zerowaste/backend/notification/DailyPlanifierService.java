@@ -14,7 +14,9 @@ import zerowaste.backend.user.User;
 import zerowaste.backend.user.UserRepository;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
@@ -102,6 +104,9 @@ public class DailyPlanifierService {
                 )
         );
 
-        mailService.sendHtmlEmail(email, "Expiring Products Alert " + LocalDate.now(), html);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, yy", Locale.ENGLISH);
+        String formattedDate = LocalDate.now().format(formatter);
+
+        mailService.sendHtmlEmail(email, "Expiring Products Alert " + formattedDate, html);
     }
 }
