@@ -51,7 +51,7 @@
         <appender-ref ref="HIBERNATE_FILE" />
     </logger>
 
-    <logger name="SoutManual" level="INFO" additivity="false">
+    <logger name="SystemOut" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="SOUT_FILE" />
     </logger>
