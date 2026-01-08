@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 import zerowaste.backend.exception.classes.ConstraintException;
 
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.stream.Collectors;
 
@@ -63,6 +64,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorHttpResponse> handleBadCredentials(BadCredentialsException ex, HttpServletRequest req) {
         return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid username or password", req.getRequestURI());
+    }
+
+    @ExceptionHandler(DateTimeException.class)
+    public ResponseEntity<ErrorHttpResponse> handleDateTimeException(DateTimeException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), req.getRequestURI());
     }
 
     @ExceptionHandler(ResponseStatusException.class)
