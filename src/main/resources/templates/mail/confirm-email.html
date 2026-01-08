@@ -1,22 +1,28 @@
 <!DOCTYPE html>
-<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Confirmă-ți email-ul</title>
+    <title>Confirm your email</title>
 </head>
 <body>
-<h2>Bine ai venit la Zerowaste!</h2>
+<h2>Welcome to Zerowaste!</h2>
 
-<p>Te rugăm să îți confirmi adresa de email apăsând pe butonul de mai jos:</p>
+<p>Please confirm your email address by clicking the button below:</p>
 
 <p>
     <a th:href="${confirmationLink}"
-       style="display:inline-block;padding:10px 20px;background:linear-gradient(135deg, #1be70c, #10f4b7);color:white;
-              text-decoration:none;border-radius:4px;">
-        Confirmă
+       style="display:inline-block;
+          padding:10px 20px;
+          border-radius:4px;
+          color:white;
+          text-decoration:none;
+          font-weight:bold;
+          background-color: #1b8911;
+          background: linear-gradient(135deg, #1b8911 0%, #5cb947 100%);">
+        Confirm
     </a>
 </p>
 
-<p>Dacă nu ți-ai creat tu contul, poți ignora acest email.</p>
+<p>If you did not create this account, you can safely ignore this email.</p>
 </body>
 </html>

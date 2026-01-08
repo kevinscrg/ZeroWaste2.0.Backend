@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Expiration Alert</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #2c3e50; margin: 0; padding: 0; }
+        .container { width: 90%; max-width: 600px; margin: 20px auto; border: 1px solid #e1e4e8; border-radius: 10px; overflow: hidden; }
+        .header {
+            background-color: #1b8911;
+            background: linear-gradient(135deg, #1b8911 0%, #5cb947 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .content { padding: 25px; background-color: white; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border-bottom: 1px solid #edf2f7; padding: 15px; text-align: left; }
+        th { color: #64748b; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
+        .cta-container { text-align: center; margin-top: 30px; }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #1b8911;
+            background: linear-gradient(135deg, #1b8911 0%, #5cb947 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .footer { padding: 20px; font-size: 0.85em; color: #94a3b8; text-align: center; background-color: #f8fafc; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1 style="margin:0;">Expiration Alert</h1>
+    </div>
+    <div class="content">
+        <p>Hi,</p>
+        <p>The following items in your inventory will expire in <strong><span th:text="${days}">X</span> days</strong>:</p>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Product</th>
+                <th>Expiry Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="product : ${products}">
+                <td th:text="${product.name}">Product Name</td>
+                <td th:text="${#temporals.format(product.bestBefore, 'dd MMM, yyyy')}">08 Jan, 2026</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="cta-container">
+            <a th:href="${frontendUrl}" class="button">See recipes for these products</a>
+        </div>
+    </div>
+    <div class="footer">
+        <p>This is an automated notification from ZeroWaste.</p>
+        <p>&copy; 2026 ZeroWaste System</p>
+    </div>
+</div>
+</body>
+</html>

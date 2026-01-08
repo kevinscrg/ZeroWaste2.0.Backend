@@ -19,7 +19,7 @@ public class UserProductList {
     @Column(name = "share_code", unique = true, length = 6)
     private String shareCode;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_product_lists_products",
             joinColumns = @JoinColumn(name = "user_product_list_id"),
