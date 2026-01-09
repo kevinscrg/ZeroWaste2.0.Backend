@@ -1,4 +1,4 @@
-package zerowaste.backend.product.service;
+package zerowaste.backend.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +17,7 @@ import zerowaste.backend.product.models.Product;
 import zerowaste.backend.product.models.UserProductList;
 import zerowaste.backend.product.repos.ProductRepository;
 import zerowaste.backend.product.repos.UserProductListRepository;
+import zerowaste.backend.product.service.ProductService;
 import zerowaste.backend.security.AppUserDetails;
 import zerowaste.backend.user.User;
 import zerowaste.backend.user.UserRepository;
@@ -75,7 +76,6 @@ class ProductServiceTest {
         testProduct.setId(100L);
         testProduct.setName("Milk");
         testProduct.setBestBefore(LocalDate.now().plusDays(10));
-        // Both consumptionDays and opened are Dates
         testProduct.setConsumptionDays(5);
         testProduct.setOpened(LocalDate.now());
     }
@@ -84,10 +84,9 @@ class ProductServiceTest {
     void testAddProduct_Success() {
         // Arrange
         LocalDate bestBefore = LocalDate.now().plusDays(10);
-        LocalDate consumptionDate = LocalDate.now().plusDays(5);
+        int consumptionDaysInt = 3;
         LocalDate openedDate = LocalDate.now();
-
-        AddProductRequest request = new AddProductRequest("Milk", bestBefore, 5, openedDate);
+        AddProductRequest request = new AddProductRequest("Milk", bestBefore, consumptionDaysInt, openedDate);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> {
@@ -102,12 +101,13 @@ class ProductServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals("Milk", result.getName());
-        assertEquals(consumptionDate, result.getConsumptionDays());
+        assertEquals(consumptionDaysInt, result.getConsumptionDays());
         assertEquals(openedDate, result.getOpened());
 
         verify(userProductListRepository).save(testList);
         verify(applicationEventPublisher).publishEvent(any(ProductListWsEvent.class));
     }
+
 
     @Test
     void testAddProduct_FutureOpenedDate_ThrowsException() {
