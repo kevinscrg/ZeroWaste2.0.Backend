@@ -24,7 +24,7 @@ class SpringStompListener(stomp.ConnectionListener):
             cerere = json.loads(frame.body)
             request_queue.put(cerere)
         except Exception as e:
-            print(f"Error parseando JSON: {e}")
+            print(f"JSON parsing error: {e}")
 
     def on_error(self, frame):
         print(f"STOMP Error: {frame.body}")
