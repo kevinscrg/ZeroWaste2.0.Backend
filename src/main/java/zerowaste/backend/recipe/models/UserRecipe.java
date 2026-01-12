@@ -1,6 +1,8 @@
 package zerowaste.backend.recipe.models;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import zerowaste.backend.user.User;
 
 @Entity
@@ -12,6 +14,7 @@ public class UserRecipe {
     private long id;
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @ManyToOne

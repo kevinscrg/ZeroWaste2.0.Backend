@@ -22,6 +22,7 @@ import zerowaste.backend.user.dtos.RegisterUserDto;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -163,6 +164,7 @@ public class AuthService {
 
         User user = token.getUser();
         user.setVerified(true);
+        user.setPreferred_notification_hour(LocalTime.of(12,0));
 
         String shCode = generateUniqueShareCode();
         UserProductList userProductList = new UserProductList();

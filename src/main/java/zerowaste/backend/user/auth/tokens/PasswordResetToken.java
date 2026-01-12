@@ -1,6 +1,8 @@
 package zerowaste.backend.user.auth.tokens;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import zerowaste.backend.user.User;
 
 import java.time.LocalDateTime;
@@ -16,6 +18,7 @@ public class PasswordResetToken {
     private String token;
 
     @ManyToOne(optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @Column(nullable = false)
